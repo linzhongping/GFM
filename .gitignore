@@ -1,5 +1,7 @@
 ### PROJECTS ###
 data
+*.txt
+*.word
 
 
 ### IntelliJ IDEA ###
