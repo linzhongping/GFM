@@ -1,0 +1,17 @@
+### PROJECTS ###
+log
+tmp_pdf
+scripts.log
+
+
+### IntelliJ IDEA ###
+__pycache__
+.idea
+*.iws
+*.iml
+*.ipr
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
