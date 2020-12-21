@@ -39,7 +39,7 @@ print('loading raw data')
 word_embeddings_dim = 300
 word_embeddings = {}
 
-with open('sgns.weibo.word', 'r',encoding = 'utf-8') as f:
+with open('glove.6B.300d.txt', 'r',encoding = 'utf-8') as f:
     for line in tqdm(f.readlines()):
         data = line.split()
         word_embeddings[str(data[0])] = list(map(float,data[1:]))
@@ -74,13 +74,13 @@ train_ids = []
 for train_name in doc_train_list:
     train_id = doc_name_list.index(train_name)
     train_ids.append(train_id)
-# random.shuffle(train_ids)
+random.shuffle(train_ids)
 
 test_ids = []
 for test_name in doc_test_list:
     test_id = doc_name_list.index(test_name)
     test_ids.append(test_id)
-# random.shuffle(test_ids)
+random.shuffle(test_ids)
 
 ids = train_ids + test_ids
 
@@ -219,45 +219,55 @@ def build_graph(start, end):
 
 
 print('building graphs for training')
-x_adj, x_feature, y, _, _ = build_graph(start=0, end=real_train_size)
-print('building graphs for training + validation')
-allx_adj, allx_feature, ally, doc_len_list_train, vocab_train = build_graph(start=0, end=train_size)
-print('building graphs for test')
-tx_adj, tx_feature, ty, doc_len_list_test, vocab_test = build_graph(start=train_size, end=train_size+test_size)
-doc_len_list = doc_len_list_train + doc_len_list_test
+x_adj, x_feature, y, _, _ = build_graph(start= 0, end= train_size + test_size)
+with open("data/ind.{}.x_adj_total".format(dataset), 'wb') as f:
+    pkl.dump(x_adj, f)
+
+with open("data/ind.{}.x_embed_total".format(dataset), 'wb') as f:
+    pkl.dump(x_feature, f)
+
+with open("data/ind.{}.y_total".format(dataset), 'wb') as f:
+    pkl.dump(y, f)
+    
+
+# print('building graphs for training + validation')
+# allx_adj, allx_feature, ally, doc_len_list_train, vocab_train = build_graph(start=0, end=train_size)
+# print('building graphs for test')
+# tx_adj, tx_feature, ty, doc_len_list_test, vocab_test = build_graph(start=train_size, end=train_size+test_size)
+# doc_len_list = doc_len_list_train + doc_len_list_test
 
 
 # statistics
-print('max_doc_length',max(doc_len_list),'min_doc_length',min(doc_len_list),
-      'average {:.2f}'.format(np.mean(doc_len_list)))
-print('training_vocab',len(vocab_train),'test_vocab',len(vocab_test),
-      'intersection',len(vocab_train & vocab_test))
+# print('max_doc_length',max(doc_len_list),'min_doc_length',min(doc_len_list),
+#       'average {:.2f}'.format(np.mean(doc_len_list)))
+# print('training_vocab',len(vocab_train),'test_vocab',len(vocab_test),
+#       'intersection',len(vocab_train & vocab_test))
 
 
 # dump objects
-with open("data/ind.{}.x_adj".format(dataset), 'wb') as f:
-    pkl.dump(x_adj, f)
+# with open("data/ind.{}.x_adj".format(dataset), 'wb') as f:
+#     pkl.dump(x_adj, f)
 
-with open("data/ind.{}.x_embed".format(dataset), 'wb') as f:
-    pkl.dump(x_feature, f)
+# with open("data/ind.{}.x_embed".format(dataset), 'wb') as f:
+#     pkl.dump(x_feature, f)
 
-with open("data/ind.{}.y".format(dataset), 'wb') as f:
-    pkl.dump(y, f)
+# with open("data/ind.{}.y".format(dataset), 'wb') as f:
+#     pkl.dump(y, f)
 
-with open("data/ind.{}.tx_adj".format(dataset), 'wb') as f:
-    pkl.dump(tx_adj, f)
+# with open("data/ind.{}.tx_adj".format(dataset), 'wb') as f:
+#     pkl.dump(tx_adj, f)
 
-with open("data/ind.{}.tx_embed".format(dataset), 'wb') as f:
-    pkl.dump(tx_feature, f)
+# with open("data/ind.{}.tx_embed".format(dataset), 'wb') as f:
+#     pkl.dump(tx_feature, f)
 
-with open("data/ind.{}.ty".format(dataset), 'wb') as f:
-    pkl.dump(ty, f)
+# with open("data/ind.{}.ty".format(dataset), 'wb') as f:
+#     pkl.dump(ty, f)
 
-with open("data/ind.{}.allx_adj".format(dataset), 'wb') as f:
-    pkl.dump(allx_adj, f)
+# with open("data/ind.{}.allx_adj".format(dataset), 'wb') as f:
+#     pkl.dump(allx_adj, f)
 
-with open("data/ind.{}.allx_embed".format(dataset), 'wb') as f:
-    pkl.dump(allx_feature, f)
+# with open("data/ind.{}.allx_embed".format(dataset), 'wb') as f:
+#     pkl.dump(allx_feature, f)
 
-with open("data/ind.{}.ally".format(dataset), 'wb') as f:
-    pkl.dump(ally, f)
+# with open("data/ind.{}.ally".format(dataset), 'wb') as f:
+#     pkl.dump(ally, f)
