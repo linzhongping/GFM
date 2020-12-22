@@ -13,7 +13,6 @@ from matplotlib import style
 sns.set(style='white')
 style.use("fivethirtyeight")
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '3' 
 
 import torch
 import torch.nn as nn
@@ -26,16 +25,16 @@ from torch.nn.init import xavier_uniform_, kaiming_normal_
 from torch.nn.parameter import Parameter
 import time
 import gc
-torch.manual_seed(7)
-torch.cuda.manual_seed_all(7)
-os.environ["CUDA_VISIBLE_DEVICES"] = '3' 
+torch.manual_seed(42)
+torch.cuda.manual_seed_all(42)
+os.environ["CUDA_VISIBLE_DEVICES"] = '2' 
 
 
 from sklearn import metrics
 from utils import * 
 import pickle as pkl
 datasets = ['mr','ohsumed','R8','R52','weibo_yiqing']
-d = 'R8'
+d = 'ohsumed'
 if d not in datasets:
     print("error dataset")
 else:
@@ -87,11 +86,11 @@ batch_size = 32
 epochs = 200
 weight_decay = 0.
 
-num_class = 8
+num_class = 23
 train_samples = train_y.shape[0]
 test_samples = test_y.shape[0]
 val_samples = val_y.shape[0]
-
+print(train_samples,test_samples)
 
 from torch.nn.init import xavier_uniform_, kaiming_normal_
 class GFMGC(nn.Module):
@@ -110,10 +109,10 @@ class GFMGC(nn.Module):
     
         self.fc1 = nn.Sequential(nn.Linear(300 + 128 * 2,128),
                                  nn.ReLU(inplace = True),
-                                 nn.BatchNorm1d(128),
+                                 nn.Dropout(0.5),
                                  nn.Linear(128,64),
                                  nn.ReLU(inplace = True),
-                                 nn.BatchNorm1d(64),
+                                 nn.Dropout(0.5),
                                  nn.Linear(64,num_class),
                                  
                                  
@@ -143,7 +142,7 @@ class GFMGC(nn.Module):
         logit = self.fc1(torch.cat([h,gfm],dim=1))
         return logit
 
-model = GFMGC(num_class = 8, input_dim = 300,fb_size=100).cuda()
+model = GFMGC(num_class = num_class, input_dim = 300,fb_size=100).cuda()
 
 optimizer = Adam(model.parameters(),lr = lr,weight_decay = weight_decay)
 lossfunc = nn.CrossEntropyLoss()
@@ -185,9 +184,7 @@ def train():
                 logits = model(feature_batch.cuda(),adj_batch.cuda(),mask_batch.cuda())
                 loss = lossfunc(logits, y_batch.cuda())
                 val_loss.append(loss.item())
-                print(logits)
                 pred = torch.max(logits,1)[1]
-                print(pred)
                 val_correct = (pred.cpu() == y_batch).sum()
 
                 val_acc += val_correct
