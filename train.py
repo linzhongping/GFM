@@ -27,14 +27,14 @@ import time
 import gc
 torch.manual_seed(42)
 torch.cuda.manual_seed_all(42)
-os.environ["CUDA_VISIBLE_DEVICES"] = '3' 
+os.environ["CUDA_VISIBLE_DEVICES"] = '7' 
 
 
 from sklearn import metrics
 from utils import * 
 import pickle as pkl
 datasets = ['mr','ohsumed','R8','R52','weibo_yiqing']
-d = 'ohsumed'
+d = 'R8'
 if d not in datasets:
     print("error dataset")
 else:
@@ -82,11 +82,11 @@ def getBatch(i, bs, A, X, Y,mask):
 
 # parameters
 lr = 0.01
-batch_size = 32
+batch_size = 16
 epochs = 200
 weight_decay = 0.
 
-num_class = 23
+num_class = 8
 train_samples = train_y.shape[0]
 test_samples = test_y.shape[0]
 val_samples = val_y.shape[0]
@@ -137,7 +137,7 @@ class GFMGC(nn.Module):
         bs, seq, emb = x.shape
         h = self.gru(x)[0][:,-1,:]
 #         print(h.shape)
-        gfm = self.cal_gfm(x,adj,bs,seq)
+        gfm = self.cal_gfm(x,adj,bs,seq,emb)
 #         gfm = F.dropout(gfm,0.1,training = self.training)
         logit = self.fc1(torch.cat([h,gfm],dim=1))
         return logit
@@ -155,7 +155,7 @@ def train():
         print('epoch {}'.format(epoch + 1))
         train_loss = []
         train_acc = 0.
-        for i in tqdm(range(train_samples // batch_size + 1)):
+        for i in tqdm(range(train_samples // batch_size)):
             adj_batch,feature_batch, y_batch, mask_batch = getBatch(i, batch_size, train_adj, train_feature, train_y,train_mask)
             optimizer.zero_grad()
             logits = model(feature_batch.cuda(),adj_batch.cuda(),mask_batch.cuda())
@@ -179,9 +179,10 @@ def train():
         val_loss = []
         val_acc = 0.
         with torch.no_grad():
-            for i in tqdm(range(test_samples // batch_size + 1)):
+            for i in tqdm(range(test_samples // batch_size)):
                 adj_batch,feature_batch, y_batch, mask_batch = getBatch(i, batch_size, test_adj, test_feature, test_y,test_mask)
                 logits = model(feature_batch.cuda(),adj_batch.cuda(),mask_batch.cuda())
+                
                 loss = lossfunc(logits, y_batch.cuda())
                 val_loss.append(loss.item())
                 pred = torch.max(logits,1)[1]
