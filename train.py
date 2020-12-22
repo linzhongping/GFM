@@ -27,7 +27,7 @@ import time
 import gc
 torch.manual_seed(42)
 torch.cuda.manual_seed_all(42)
-os.environ["CUDA_VISIBLE_DEVICES"] = '2' 
+os.environ["CUDA_VISIBLE_DEVICES"] = '3' 
 
 
 from sklearn import metrics
@@ -119,9 +119,9 @@ class GFMGC(nn.Module):
             )
         self._init_weights()
     
-    def cal_gfm(self,x,adj,bs,seq):# x-[bs,seq,emb_size]  adj:[bs,seq,seq]
+    def cal_gfm(self,x,adj,bs,seq,emb):# x-[bs,seq,emb_size]  adj:[bs,seq,seq]
 
-        left = x.repeat(1,1,seq).view(bs,seq * seq ,-1)
+        left = x.repeat(1,1,seq).view(bs,seq * seq,-1)
         right = x.repeat(1,seq,1)
         fi = left * right   
         adj = adj.view(bs,-1).unsqueeze(2)
